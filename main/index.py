@@ -3,6 +3,10 @@ from datetime import datetime
 import yfinance as yf
 
 import pymongo
+import redis
+
+redis = redis.StrictRedis(host="redis-12441.c294.ap-northeast-1-2.ec2.cloud.redislabs.com", port=12441,
+                          password="uvLuMUsT4ChA2OJCDlDu5SkDtBzVEnQj")
 
 client = pymongo.MongoClient('mongodb+srv://test:sparta@Cluster0.dlhbsnt.mongodb.net/Cluster()?retryWrites=true&w=majority')
 db = client.stock_stock
@@ -36,9 +40,11 @@ def renew_current_index():
     today = datetime.now().strftime('%Y-%m-%d')
 
     df_kosdaq_now = pdr.get_data_yahoo("^KQ11", today)
-    close_price = round(df_kosdaq_now.iloc[0]['Adj Close'], 2)
-    db.index.update_one({'name': 'kosdaq'}, {'$set': {"current": close_price}})
+    kq_close_price = round(df_kosdaq_now.iloc[0]['Adj Close'], 2)
+    db.index.update_one({'name': 'kosdaq'}, {'$set': {"current": kq_close_price}})
+    redis.rpush('kosdaq', kq_close_price)
 
     df_kospi_now = pdr.get_data_yahoo("^KS11", today)
-    close_price = round(df_kospi_now.iloc[0]['Adj Close'], 2)
-    db.index.update_one({"name": 'kospi'}, {"$set": {"current": close_price}})
+    ks_close_price = round(df_kospi_now.iloc[0]['Adj Close'], 2)
+    db.index.update_one({"name": 'kospi'}, {"$set": {"current": ks_close_price}})
+    redis.rpush('kospi', ks_close_price)

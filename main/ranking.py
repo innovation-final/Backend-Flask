@@ -4,6 +4,7 @@ import json
 
 from pykrx import stock
 
+
 from pymongo import MongoClient
 
 client = MongoClient('mongodb+srv://test:sparta@Cluster0.dlhbsnt.mongodb.net/Cluster()?retryWrites=true&w=majority')

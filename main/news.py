@@ -15,7 +15,7 @@ def get_news():
     stocks = list(db.chart.find({}))
     for i, stock in enumerate(stocks):
         stock_name = stock["name"]
-        print(f"{i + 1}/{2650} {stock_name}")
+        # print(f"{i + 1}/{2650} {stock_name}")
 
         encText = urllib.parse.quote(stock_name + "주식")
         url = "https://openapi.naver.com/v1/search/news.json?query=" + encText + "&display=5"
@@ -32,4 +32,6 @@ def get_news():
                 result[j]['title'] = html.unescape(result[j]['title']).replace("<b>", "").replace("</b>", "")
             db.news.update_one({"name": stock_name}, {"$set": {"data": result}})
         else:
-            print("Error Code:" + rescode)
+            # print("Error Code:" + rescode)
+            continue
+    print("done getting news")

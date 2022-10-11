@@ -1,6 +1,11 @@
+import redis
 from pykrx import stock
+from datetime import datetime, timedelta
 
 from pymongo import MongoClient
+
+redis = redis.StrictRedis(host="redis-12441.c294.ap-northeast-1-2.ec2.cloud.redislabs.com", port=12441,
+                          password="uvLuMUsT4ChA2OJCDlDu5SkDtBzVEnQj")
 
 client = MongoClient('mongodb+srv://test:sparta@Cluster0.dlhbsnt.mongodb.net/Cluster()?retryWrites=true&w=majority')
 db = client.stock_stock
@@ -30,4 +35,15 @@ def renew_stock_data(today):
             "fluctuation_rate": fluctuation_rate
         }
         db.chart.update_one({"code": stock_code}, {"$set": {"current": result}})
+        redis.rpush(stock_code, last_price)
     print("done renewing current stock")
+
+
+def set_expire_at(today):
+    tomorrow = today + timedelta(days=1)
+    tom_date = tomorrow.date()
+    tom_time = tomorrow.time().replace(9, 0, 0, 0)
+    expire_at = datetime.combine(tom_date, tom_time)
+
+    for key in redis.keys():
+        redis.expireat(key.decode(), expire_at)
