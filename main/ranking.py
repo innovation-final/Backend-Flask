@@ -1,6 +1,5 @@
 import redis
-from rejson import Client, Path
-import json
+from datetime import datetime
 
 from pykrx import stock
 
@@ -13,8 +12,6 @@ db = client.stock_stock
 redis = redis.StrictRedis(host="redis-12441.c294.ap-northeast-1-2.ec2.cloud.redislabs.com", port=12441,
                           password="uvLuMUsT4ChA2OJCDlDu5SkDtBzVEnQj")
 
-
-# redis = Client(host="redis-12441.c294.ap-northeast-1-2.ec2.cloud.redislabs.com", port=12441, password="uvLuMUsT4ChA2OJCDlDu5SkDtBzVEnQj", decode_responses=True)
 
 def update_rank_data(df, criteria, cnt=10):
     result = []
@@ -45,7 +42,9 @@ def update_rank_data(df, criteria, cnt=10):
     db.ranking.update_one({"criteria": criteria}, {"$set": {"data": result}})
 
 
-def renew_ranking_top10(today):
+def renew_ranking_top10():
+    today = datetime.now().strftime("%Y%m%d")
+
     kospi = stock.get_market_ohlcv(today, market="KOSPI")  # 오늘 코스피 종목들의 OHLCV
     kosdaq = stock.get_market_ohlcv(today, market="KOSDAQ")  # 오늘 코스닥 종목들의 OHLCV
 
@@ -55,10 +54,10 @@ def renew_ranking_top10(today):
     update_rank_data(kosdaq.sort_values("등락률", ascending=False).head(10), "kosdaq_rate")
     update_rank_data(kosdaq.sort_values("거래량", ascending=False).head(10), "kosdaq_vol")
 
-    print("done renewing ranking 10")
 
+def renew_ranking_top100():
+    today = datetime.now().strftime("%Y%m%d")
 
-def renew_ranking_top100(today):
     kospi = stock.get_market_ohlcv(today, market="KOSPI")  # 오늘 코스피 종목들의 OHLCV
     kosdaq = stock.get_market_ohlcv(today, market="KOSDAQ")  # 오늘 코스닥 종목들의 OHLCV
 
@@ -67,5 +66,3 @@ def renew_ranking_top100(today):
 
     update_rank_data(kosdaq.sort_values("등락률", ascending=False).head(100), "kosdaq_rate_extend", 100)
     update_rank_data(kosdaq.sort_values("거래량", ascending=False).head(100), "kosdaq_vol_extend", 100)
-
-    print("done renewing ranking 100")

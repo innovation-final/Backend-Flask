@@ -34,4 +34,3 @@ def get_news():
         else:
             # print("Error Code:" + rescode)
             continue
-    print("done getting news")

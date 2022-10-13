@@ -92,8 +92,8 @@ today = now.strftime("%Y%m%d")
 #         print(f"{cnt}/{2650} {ticker}")
 
 
-def add_data(today):
-    print("start adding stock detail")
+def add_data():
+    today = datetime.now().strftime("%Y%m%d")
     stocks = list(db.chart.find({}))
     for i, stock in enumerate(stocks):
         ticker = stock["code"]
@@ -113,11 +113,9 @@ def add_data(today):
             db.chart.update_one({"code": ticker}, {"$set": {"data": result}})
         except:
             continue
-    print("done adding stock detail")
 
 
 def renew_marcap():
-    print('start renewing marcap')
     data = fdr.StockListing('KRX-MARCAP')
     marcap_list = data['Marcap'].to_list()
     code_list = data['Code'].to_list()
@@ -126,5 +124,3 @@ def renew_marcap():
             db.chart.update_one({"code": code}, {"$set": {"marcap": marcap_list[i]}})
         except:
             continue
-
-    print('done renewing marcap')

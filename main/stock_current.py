@@ -11,8 +11,8 @@ client = MongoClient('mongodb+srv://test:sparta@Cluster0.dlhbsnt.mongodb.net/Clu
 db = client.stock_stock
 
 
-def renew_stock_data(today):
-    print("start renewing current stock")
+def renew_stock_data():
+    today = datetime.now().strftime("%Y%m%d")
     df = stock.get_market_ohlcv(today, market="ALL")
     index = df.index.to_list()
     for i in range(df.shape[0]):
@@ -36,14 +36,16 @@ def renew_stock_data(today):
         }
         db.chart.update_one({"code": stock_code}, {"$set": {"current": result}})
         redis.rpush(stock_code, last_price)
-    print("done renewing current stock")
 
 
-def set_expire_at(today):
+def set_expire_at():
+    today = datetime.now()
     tomorrow = today + timedelta(days=1)
     tom_date = tomorrow.date()
-    tom_time = tomorrow.time().replace(9, 0, 0, 0)
+    tom_time = tomorrow.time().replace(8, 57, 0, 0)
     expire_at = datetime.combine(tom_date, tom_time)
 
     for key in redis.keys():
         redis.expireat(key.decode(), expire_at)
+        
+set_expire_at()
