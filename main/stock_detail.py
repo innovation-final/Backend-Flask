@@ -29,7 +29,7 @@ today = now.strftime("%Y%m%d")
 #         ])
 #     db.chart.update_one({"code": ticker}, {"$set": {"data": result}})
 #     print(f"{c + 1}/{2650} {ticker}")
-#
+
 # def set_data():
 #     cnt = 0
 #
@@ -42,18 +42,14 @@ today = now.strftime("%Y%m%d")
 #             for i in range(df.shape[0]):
 #                 result.append([
 #                     str(index[i])[:10],  # date
-#                     str(int(df.iloc[i]["Open"])),
-#                     str(int(df.iloc[i]["High"])),
-#                     str(int(df.iloc[i]["Low"])),
-#                     str(int(df.iloc[i]["Close"])),
-#                     str(int(df.iloc[i]["Volume"])),
-#                     str(df.iloc[i]["Change"]),
+#                     str(int(df.iloc[i]["Close"]))
+#                     # str(int(df.iloc[i]["Volume"]))
 #                 ])
 #         except:
 #             cnt += 1
 #             continue
 #
-#         db.chart.insert_one({
+#         db.chart_year.insert_one({
 #             "name": stock.get_market_ticker_name(ticker),
 #             "code": ticker,
 #             "market": "KOSPI",
@@ -71,18 +67,14 @@ today = now.strftime("%Y%m%d")
 #             for i in range(df.shape[0]):
 #                 result.append([
 #                     str(index[i])[:10],  # date
-#                     str(int(df.iloc[i]["Open"])),
-#                     str(int(df.iloc[i]["High"])),
-#                     str(int(df.iloc[i]["Low"])),
-#                     str(int(df.iloc[i]["Close"])),
-#                     str(int(df.iloc[i]["Volume"])),
-#                     str(df.iloc[i]["Change"]),
+#                     str(int(df.iloc[i]["Close"]))
+#                     # str(int(df.iloc[i]["Volume"]))
 #                 ])
 #         except:
 #             cnt += 1
 #             continue
 #
-#         db.chart.insert_one({
+#         db.chart_year.insert_one({
 #             "name": stock.get_market_ticker_name(ticker),
 #             "code": ticker,
 #             "market": "KOSDAQ",
@@ -100,7 +92,10 @@ def add_data():
         try:
             df = fdr.DataReader(ticker, today, today)
             index = df.index.to_list()[0]
+
             result = db.chart.find_one({"code": ticker})["data"]
+            result_year = db.chart_year.find_one({"code": ticker})["data"]
+
             result.append([
                 str(index)[:10],  # date
                 str(int(df["Open"])),
@@ -110,7 +105,11 @@ def add_data():
                 str(int(df["Volume"])),
                 str(float(df["Change"])),
             ])
+            result_year.append([str(index)[:10], str(int(df["Close"]))])
+
             db.chart.update_one({"code": ticker}, {"$set": {"data": result}})
+            db.chart_year.update_one({"code": ticker}, {"$set": {"data": result_year}})
+
         except:
             continue
 

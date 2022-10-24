@@ -1,3 +1,5 @@
+import time
+
 import redis
 from pykrx import stock
 from datetime import datetime, timedelta
@@ -40,12 +42,13 @@ def renew_stock_data():
 
 def set_expire_at():
     today = datetime.now()
-    tomorrow = today + timedelta(days=1)
-    tom_date = tomorrow.date()
-    tom_time = tomorrow.time().replace(8, 57, 0, 0)
-    expire_at = datetime.combine(tom_date, tom_time)
+    if today.weekday() == 4: # 금요일
+        until = today + timedelta(days=3)
+    else:
+        until = today + timedelta(days=1)
+    exp_date = until.date()
+    exp_time = until.time().replace(8, 57, 0, 0)
+    expire_at = datetime.combine(exp_date, exp_time)
 
     for key in redis.keys():
         redis.expireat(key.decode(), expire_at)
-        
-set_expire_at()

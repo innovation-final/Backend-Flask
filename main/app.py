@@ -1,7 +1,7 @@
 import logging
 import redis
 
-import news, stock_list, stock_detail, ranking, stock_current, index, fin_table
+import news, stock_list, stock_detail, ranking, stock_current, index, fin_table, holiday
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.mongodb import MongoDBJobStore
 
@@ -55,12 +55,12 @@ def get_today_index(index_name):
 sched.add_job(news.get_news, 'interval', hours=3, id='get_news', replace_existing=True) # 매일 3시간마다
 
 # 종목 리스트
-sched.add_job(stock_list.renew_stock_list, 'cron', day_of_week='mon-fri', hour=8, minute=30, id='renew_stock_list', replace_existing=True) # 월-금 8:30
+sched.add_job(stock_list.renew_stock_list, 'cron', misfire_grace_time=None, day_of_week='mon-fri', hour=8, id='renew_stock_list', replace_existing=True) # 월-금 8:00
 
 # 코스피, 코스닥
-sched.add_job(index.renew_current_index, 'cron', day_of_week='mon-fri', hour='9-15', minute='*/2', id='renew_current_index', replace_existing=True) # 월-금 9-15시 2분마다
-sched.add_job(index.add_kosdaq, 'cron', day_of_week='tue-sat', hour=1, id='add_kosdaq', replace_existing=True)
-sched.add_job(index.add_kospi, 'cron', day_of_week='tue-sat', hour=1, id='add_kospi', replace_existing=True)
+sched.add_job(index.renew_current_index, 'cron', day_of_week='mon-fri', hour='9-15', minute='*/2', jitter=60, id='renew_current_index', replace_existing=True) # 월-금 9-15시 2분마다
+sched.add_job(index.add_kosdaq, 'cron', day_of_week='sat', hour=1, id='add_kosdaq', replace_existing=True)
+sched.add_job(index.add_kospi, 'cron', day_of_week='sat', hour=1, id='add_kospi', replace_existing=True)
 
 # 주식차트, 시총
 sched.add_job(stock_detail.add_data, 'cron', misfire_grace_time=None, day_of_week='mon-fri', hour=15, minute=30, id='add_data', replace_existing=True) # 월-금 15:30
@@ -80,6 +80,20 @@ sched.add_job(fin_table.renew_fin_table, 'cron', args=[fin_table.kospi_stocks, "
 
 
 sched.start()
+
+
+@sched.scheduled_job('cron', misfire_grace_time=None, day_of_week='mon-fri', hour=0, minute=0, second=0, id='check_holiday')
+def check_holiday():
+    if holiday.is_holiday():
+        sched.pause_job('renew_ranking_top10')
+        sched.pause_job('renew_ranking_top100')
+        sched.pause_job('renew_stock_data')
+        sched.pause_job('add_data')
+    else:
+        sched.resume_job('renew_ranking_top10')
+        sched.resume_job('renew_ranking_top100')
+        sched.resume_job('renew_stock_data')
+        sched.resume_job('add_data')
 
 
 if __name__ == '__main__':

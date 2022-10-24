@@ -1,5 +1,6 @@
 import html
 import json
+import time
 import urllib.request
 
 from pymongo import MongoClient
@@ -34,3 +35,5 @@ def get_news():
         else:
             # print("Error Code:" + rescode)
             continue
+
+        time.sleep(0.5)

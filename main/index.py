@@ -17,7 +17,7 @@ yf.pdr_override()
 def add_kosdaq():
     result = []
     df_kosdaq = pdr.get_data_yahoo("^KQ11", start="2012-01-01", end=datetime.now().strftime('%Y-%m-%d'))
-    for j in range(df_kosdaq.shape[0]):
+    for j in range(0, df_kosdaq.shape[0], 30):
         day = df_kosdaq.index[j]
         date = day.strftime('%Y-%m-%d')
         close_price = round(df_kosdaq.iloc[j]["Adj Close"], 2)
@@ -28,7 +28,7 @@ def add_kosdaq():
 def add_kospi():
     result = []
     df_kospi = pdr.get_data_yahoo("^KS11", start="2012-01-01", end=datetime.now().strftime('%Y-%m-%d'))
-    for j in range(df_kospi.shape[0]):
+    for j in range(0, df_kospi.shape[0], 30):
         day = df_kospi.index[j]
         date = day.strftime('%Y-%m-%d')
         close_price = round(df_kospi.iloc[j]["Adj Close"], 2)
