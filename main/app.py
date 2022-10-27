@@ -22,7 +22,7 @@ redis = redis.StrictRedis(host="redis-12441.c294.ap-northeast-1-2.ec2.cloud.redi
 app = Flask(__name__)
 
 
-CORS(app, resources={r'*': {'origins': ['http://localhost:3000', 'http://innovationcamp1234.shop', 'https://innovationcamp1234.shop']}})
+CORS(app, resources={r'*': {'origins': ['http://localhost:3000', 'https://main.stocks-talk.site']}})
 
 
 logging.basicConfig()
@@ -79,9 +79,6 @@ sched.add_job(fin_table.renew_fin_table, 'cron', args=[fin_table.kosdaq_stocks, 
 sched.add_job(fin_table.renew_fin_table, 'cron', args=[fin_table.kospi_stocks, ".KS"], month=12, id='renew_fin_table_kospi', replace_existing=True)
 
 
-sched.start()
-
-
 @sched.scheduled_job('cron', misfire_grace_time=None, day_of_week='mon-fri', hour=0, minute=0, second=0, id='check_holiday')
 def check_holiday():
     if holiday.is_holiday():
@@ -94,6 +91,9 @@ def check_holiday():
         sched.resume_job('renew_ranking_top100')
         sched.resume_job('renew_stock_data')
         sched.resume_job('add_data')
+
+
+sched.start()
 
 
 if __name__ == '__main__':

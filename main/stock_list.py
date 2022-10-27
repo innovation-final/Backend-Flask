@@ -10,8 +10,6 @@ db = client.stock_stock
 def renew_stock_list():
     today = datetime.now().strftime("%Y%m%d")
     tickers = stock.get_market_ticker_list(today, market='ALL')
-    db.stocklist.delete_many({})
     for ticker in tickers:
         stock_name = stock.get_market_ticker_name(ticker)
-        db.stocklist.insert_one({"name": stock_name, "code": ticker})
-renew_stock_list()
+        db.stocklist.update_one({"name": stock_name}, {"$set": {"code": ticker}}, upsert=True)
