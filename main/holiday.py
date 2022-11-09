@@ -14,8 +14,11 @@ def is_holiday():
     response = requests.get(url)
     if response.status_code == 200:
         json_ob = json.loads(response.text)
-        holidays_data = json_ob['response']['body']['items']['item']
-        dataframe = json_normalize(holidays_data)
+        try:
+            holidays_data = json_ob['response']['body']['items']['item']
+            dataframe = json_normalize(holidays_data)
+        except:
+            return False
     dateName = dataframe.loc[dataframe['locdate'] == int(today), 'dateName']
 
     return dateName.to_list() != []
